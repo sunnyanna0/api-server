@@ -1,35 +1,49 @@
-from typing import Union
 from fastapi import FastAPI
-
-# model.py를 가져온다.
 import model
 
-# 그 안에 있는 AndModel 클래스의 인스턴스를 생성한다.
-model = model.AndModel()
-
-# API 서버를 생성한다.
+# FastAPI 서버 생성
 app = FastAPI()
 
-# endpoint 엔드포인트를 선언하며 GET으로 요청을 받고 경로는 /이다.
+# 모델 인스턴스 생성 (AND, OR, NOT)
+and_model = model.AndModel()
+or_model = model.OrModel()
+not_model = model.NOTModel()
+and_model.train()
+or_model.train()
+not_model.train()
+
+# 기본 엔드포인트
 @app.get("/")
 def read_root():
-    # 딕셔너리를 반환하면 JSON으로 직렬화된다.
-    return {"Hello": "World"}
+    return {"message": "논리연산 AI 서버입니다. /predict/{operation}/{left}/{right} 경로로 요청하세요."}
 
-# 이 엔드포인트의 전체 경로는 /items/{item_id} 이다.
-# 중괄호안의 item_id는 경로 매개변수(파라메터)이며 데코레이터 아래 함수의 인수로 쓰인다.
-@app.get("/items/{item_id}") 
-def read_item(item_id: int):
-    return {"item_id": item_id}
+# 논리 연산 예측 API
+@app.get("/predict/{operation}/{left}")
+@app.get("/predict/{operation}/{left}/{right}")
+def predict(operation: str, left: int, right: int = None):
+    if operation == "AND":
+        result = and_model.predict([left, right])
+    elif operation == "OR":
+        result = or_model.predict([left, right])
+    elif operation == "NOT":
+        if right is not None:
+            return {"error": "NOT 연산에는 하나의 입력값만 필요합니다."}
+        result = not_model.predict([left])
+    else:
+        return {"error": "지원하지 않는 연산입니다. (AND, OR, NOT만 가능)"}
 
-# 모델의 예측 기능을 호출한다. 조회 기능은 GET로 한다.
-@app.get("/predict/left/{left}/right/{right}") 
-def predict(left: int, right: int):
-    result = model.predict([left, right])
-    return {"result": result}
+    return {"operation": operation, "left": left, "right": right, "result": result}
 
-# 모델의 학습을 요청한다. 생성 기능은 POST로 한다.
-@app.post("/train")
-def train():
-    model.train()
-    return {"result": "OK"}
+# 논리 연산 모델 학습 API (POST 요청)
+@app.post("/train/{operation}")
+def train(operation: str):
+    if operation == "AND":
+        and_model.train()
+    elif operation == "OR":
+        or_model.train()
+    elif operation == "NOT":
+        not_model.train()
+    else:
+        return {"error": "지원하지 않는 연산입니다. (AND, OR, NOT만 가능)"}
+
+    return {"operation": operation, "result": "Training complete"}

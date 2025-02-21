@@ -1,8 +1,8 @@
 import numpy as np
 
+# AND 연산 모델
 class AndModel:
     def __init__(self):
-        # 파라메터
         self.weights = np.random.rand(2)
         self.bias = np.random.rand(1)
 
@@ -11,6 +11,61 @@ class AndModel:
         epochs = 20
         inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
         outputs = np.array([0, 0, 0, 1])        
+        for epoch in range(epochs):
+            for i in range(len(inputs)):
+                total_input = np.dot(inputs[i], self.weights) + self.bias
+                prediction = self.step_function(total_input)
+                error = outputs[i] - prediction
+                self.weights += learning_rate * error * inputs[i]
+                self.bias += learning_rate * error
+
+    def step_function(self, x):
+        return 1 if x >= 0 else 0
+    
+    def predict(self, input_data):
+        total_input = np.dot(input_data, self.weights) + self.bias
+        return self.step_function(total_input)
+
+
+# OR 연산 모델
+class OrModel:
+    def __init__(self):
+        self.weights = np.random.rand(2)
+        self.bias = np.random.rand(1)
+
+    def train(self):
+        learning_rate = 0.1
+        epochs = 20
+        inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+        outputs = np.array([0, 1, 1, 1])        
+        for epoch in range(epochs):
+            for i in range(len(inputs)):
+                total_input = np.dot(inputs[i], self.weights) + self.bias
+                prediction = self.step_function(total_input)
+                error = outputs[i] - prediction
+                self.weights += learning_rate * error * inputs[i]
+                self.bias += learning_rate * error
+
+    def step_function(self, x):
+        return 1 if x >= 0 else 0
+    
+    def predict(self, input_data):
+        total_input = np.dot(input_data, self.weights) + self.bias
+        return self.step_function(total_input)
+
+
+# NOT 연산 모델
+class NOTModel:
+    def __init__(self):
+        # 파라메터
+        self.weights = np.random.rand(1)
+        self.bias = np.random.rand(1)
+
+    def train(self):
+        learning_rate = 0.1
+        epochs = 20
+        inputs = np.array([[0], [1]])
+        outputs = np.array([1, 0])        
         for epoch in range(epochs):
             for i in range(len(inputs)):
                 # 총 입력 계산
@@ -29,10 +84,10 @@ class AndModel:
                 self.bias += learning_rate * error
                 print('====')        
 
+
     def step_function(self, x):
         return 1 if x >= 0 else 0
-    
+
     def predict(self, input_data):
-        total_input = np.dot(input_data, self.weights) + self.bias
-        return self.step_function(total_input)    
-    
+        total_input = self.bias
+        return self.step_function(total_input)
